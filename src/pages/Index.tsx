@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Brain, BookOpen, ChartBar, UserCheck, BrainCircuit, BookText, ArrowRight, Menu, X } from "lucide-react";
+import { Brain, BookOpen, ChartBar, UserCheck, BrainCircuit, BookText, ArrowRight, Menu, X, MessageCircle, Maximize2, Minimize2 } from "lucide-react";
 import { useState } from "react";
 
 const fadeIn = {
@@ -52,9 +52,18 @@ const testimonials = [
 const Index = () => {
   const [chatOpen, setChatOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const toggleChat = () => {
+    setChatOpen(!chatOpen);
+  };
+
+  const toggleMaximize = () => {
+    setIsMaximized(!isMaximized);
   };
 
   return (
@@ -306,23 +315,55 @@ const Index = () => {
         </div>
       </footer>
 
+      <motion.button
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={toggleChat}
+        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow ${chatOpen ? 'hidden' : ''}`}
+      >
+        <MessageCircle className="h-6 w-6" />
+      </motion.button>
+
       {chatOpen && (
-        <div className="fixed bottom-4 right-4 w-80 h-96 bg-white rounded-lg shadow-lg border border-gray-200 flex flex-col">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          className={`fixed ${
+            isMaximized 
+              ? 'top-0 left-0 right-0 bottom-0 m-4' 
+              : 'bottom-4 right-4 w-80 h-96'
+          } bg-white rounded-lg shadow-lg border border-gray-200 flex flex-col z-50 transition-all duration-300`}
+        >
           <div className="p-4 border-b border-gray-200 flex justify-between items-center">
             <h3 className="font-semibold">Vedic AI Chat</h3>
-            <button 
-              onClick={() => setChatOpen(false)}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              ✕
-            </button>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={toggleMaximize}
+                className="text-gray-500 hover:text-gray-700 p-1 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                {isMaximized ? (
+                  <Minimize2 className="h-5 w-5" />
+                ) : (
+                  <Maximize2 className="h-5 w-5" />
+                )}
+              </button>
+              <button 
+                onClick={toggleChat}
+                className="text-gray-500 hover:text-gray-700 p-1 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
           </div>
           <div className="flex-1 p-4 bg-gray-50">
             <p className="text-center text-gray-500 mt-4">
               Chat functionality coming soon...
             </p>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );

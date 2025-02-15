@@ -1,6 +1,5 @@
-
 import { motion } from "framer-motion";
-import { Brain, BookOpen, ChartBar, UserCheck, BrainCircuit, BookText, ArrowRight } from "lucide-react";
+import { Brain, BookOpen, ChartBar, UserCheck, BrainCircuit, BookText, ArrowRight, Menu, X } from "lucide-react";
 import { useState } from "react";
 
 const fadeIn = {
@@ -52,11 +51,96 @@ const testimonials = [
 
 const Index = () => {
   const [chatOpen, setChatOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-20 px-4">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-200">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            <a href="#" className="flex items-center space-x-2">
+              <Brain className="h-8 w-8 text-primary" />
+              <span className="text-xl font-bold font-serif">Vedic AI</span>
+            </a>
+            <div className="hidden md:flex items-center space-x-8">
+              <a href="#" className="text-foreground/80 hover:text-primary transition-colors">
+                Home
+              </a>
+              <a href="#vision" className="text-foreground/80 hover:text-primary transition-colors">
+                Vision
+              </a>
+              <a href="#services" className="text-foreground/80 hover:text-primary transition-colors">
+                Services
+              </a>
+              <button
+                onClick={() => setChatOpen(true)}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity"
+              >
+                Try Demo
+              </button>
+            </div>
+            <button
+              onClick={toggleMenu}
+              className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              {isMenuOpen ? (
+                <X className="h-6 w-6 text-foreground" />
+              ) : (
+                <Menu className="h-6 w-6 text-foreground" />
+              )}
+            </button>
+          </div>
+          <motion.div
+            initial="closed"
+            animate={isMenuOpen ? "open" : "closed"}
+            variants={{
+              open: { opacity: 1, height: "auto" },
+              closed: { opacity: 0, height: 0 }
+            }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden overflow-hidden"
+          >
+            <div className="py-4 space-y-4">
+              <a
+                href="#"
+                className="block px-4 py-2 text-foreground/80 hover:text-primary transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Home
+              </a>
+              <a
+                href="#vision"
+                className="block px-4 py-2 text-foreground/80 hover:text-primary transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Vision
+              </a>
+              <a
+                href="#services"
+                className="block px-4 py-2 text-foreground/80 hover:text-primary transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Services
+              </a>
+              <button
+                onClick={() => {
+                  setChatOpen(true);
+                  setIsMenuOpen(false);
+                }}
+                className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity"
+              >
+                Try Demo
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      </nav>
+
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-20 px-4 pt-24">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/5 -z-10" />
         <motion.div
           initial="initial"
@@ -92,8 +176,7 @@ const Index = () => {
         </motion.div>
       </section>
 
-      {/* Vision Section */}
-      <section className="py-20 px-4 bg-white">
+      <section id="vision" className="py-20 px-4 bg-white">
         <motion.div 
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -132,7 +215,6 @@ const Index = () => {
         </motion.div>
       </section>
 
-      {/* Services Section */}
       <section id="services" className="py-20 px-4 bg-muted/50">
         <motion.div 
           initial={{ opacity: 0 }}
@@ -168,7 +250,6 @@ const Index = () => {
         </motion.div>
       </section>
 
-      {/* Testimonials Section */}
       <section className="py-20 px-4 bg-white">
         <motion.div 
           initial={{ opacity: 0 }}
@@ -204,7 +285,6 @@ const Index = () => {
         </motion.div>
       </section>
 
-      {/* Footer */}
       <footer className="py-12 px-4 bg-secondary text-secondary-foreground">
         <div className="container max-w-6xl space-y-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
@@ -226,7 +306,6 @@ const Index = () => {
         </div>
       </footer>
 
-      {/* Chat Widget (Placeholder) */}
       {chatOpen && (
         <div className="fixed bottom-4 right-4 w-80 h-96 bg-white rounded-lg shadow-lg border border-gray-200 flex flex-col">
           <div className="p-4 border-b border-gray-200 flex justify-between items-center">

@@ -1,55 +1,76 @@
 import { motion } from "framer-motion";
-import { Brain, BookOpen, ChartBar, UserCheck, BrainCircuit, BookText, ArrowRight, Menu, X, MessageCircle, Maximize2, Minimize2 } from "lucide-react";
+import {
+  Brain,
+  BookOpen,
+  ChartBar,
+  UserCheck,
+  BrainCircuit,
+  BookText,
+  ArrowRight,
+  Menu,
+  X,
+  MessageCircle,
+  Maximize2,
+  Minimize2,
+} from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6 }
+  transition: { duration: 0.6 },
 };
 
 const services = [
   {
     icon: <ChartBar className="h-8 w-8" />,
     title: "Predictive Analytics",
-    description: "Harness the power of AI to forecast trends and make data-driven decisions"
+    description:
+      "Harness the power of AI to forecast trends and make data-driven decisions",
   },
   {
     icon: <UserCheck className="h-8 w-8" />,
     title: "Personalized Recommendations",
-    description: "Get tailored insights based on your unique needs and preferences"
+    description:
+      "Get tailored insights based on your unique needs and preferences",
   },
   {
     icon: <BrainCircuit className="h-8 w-8" />,
     title: "AI-powered Insights",
-    description: "Unlock deeper understanding through advanced artificial intelligence"
+    description:
+      "Unlock deeper understanding through advanced artificial intelligence",
   },
   {
     icon: <BookText className="h-8 w-8" />,
     title: "Vedic Knowledge Consultations",
-    description: "Access ancient wisdom through modern technology"
-  }
+    description: "Access ancient wisdom through modern technology",
+  },
 ];
 
 const testimonials = [
   {
-    quote: "Vedic AI has transformed how we approach decision-making in our organization.",
+    quote:
+      "Vedic AI has transformed how we approach decision-making in our organization.",
     author: "Sarah Johnson",
-    position: "CEO, TechVision Inc"
+    position: "CEO, TechVision Inc",
   },
   {
-    quote: "The perfect blend of ancient wisdom and modern technology. Absolutely revolutionary!",
+    quote:
+      "The perfect blend of ancient wisdom and modern technology. Absolutely revolutionary!",
     author: "Dr. Michael Chen",
-    position: "Research Director, Future Labs"
+    position: "Research Director, Future Labs",
   },
   {
-    quote: "Their predictive analytics have given us invaluable insights for our strategic planning.",
+    quote:
+      "Their predictive analytics have given us invaluable insights for our strategic planning.",
     author: "Raj Patel",
-    position: "Strategy Head, Global Solutions"
-  }
+    position: "Strategy Head, Global Solutions",
+  },
 ];
 
 const Index = () => {
+  const navigate = useNavigate();
   const [chatOpen, setChatOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
@@ -66,6 +87,10 @@ const Index = () => {
     setIsMaximized(!isMaximized);
   };
 
+  const handleTryDemo = () => {
+    navigate("/vedic-ai");
+  };
+
   return (
     <div className="min-h-screen">
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-200">
@@ -76,17 +101,26 @@ const Index = () => {
               <span className="text-xl font-bold font-serif">Vedic AI</span>
             </a>
             <div className="hidden md:flex items-center space-x-8">
-              <a href="#" className="text-foreground/80 hover:text-primary transition-colors">
+              <a
+                href="#"
+                className="text-foreground/80 hover:text-primary transition-colors"
+              >
                 Home
               </a>
-              <a href="#vision" className="text-foreground/80 hover:text-primary transition-colors">
+              <a
+                href="#vision"
+                className="text-foreground/80 hover:text-primary transition-colors"
+              >
                 Vision
               </a>
-              <a href="#services" className="text-foreground/80 hover:text-primary transition-colors">
+              <a
+                href="#services"
+                className="text-foreground/80 hover:text-primary transition-colors"
+              >
                 Services
               </a>
               <button
-                onClick={() => setChatOpen(true)}
+                onClick={handleTryDemo}
                 className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity"
               >
                 Try Demo
@@ -108,7 +142,7 @@ const Index = () => {
             animate={isMenuOpen ? "open" : "closed"}
             variants={{
               open: { opacity: 1, height: "auto" },
-              closed: { opacity: 0, height: 0 }
+              closed: { opacity: 0, height: 0 },
             }}
             transition={{ duration: 0.2 }}
             className="md:hidden overflow-hidden"
@@ -164,19 +198,22 @@ const Index = () => {
               Harness the Power of AI with Ancient Wisdom
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Combining the best of modern technology and timeless knowledge to empower your decisions.
+              Combining the best of modern technology and timeless knowledge to
+              empower your decisions.
             </p>
           </motion.div>
-          
+
           <motion.div {...fadeIn} className="flex justify-center gap-4">
-            <button 
-              onClick={() => document.getElementById('services')?.scrollIntoView()}
+            <button
+              onClick={() =>
+                document.getElementById("services")?.scrollIntoView()
+              }
               className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity flex items-center gap-2"
             >
               Get Started <ArrowRight className="h-4 w-4" />
             </button>
-            <button 
-              onClick={() => setChatOpen(true)}
+            <button
+              onClick={handleTryDemo}
               className="px-6 py-3 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-lg font-medium hover:bg-white/90 transition-all"
             >
               Try Demo
@@ -186,7 +223,7 @@ const Index = () => {
       </section>
 
       <section id="vision" className="py-20 px-4 bg-white">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -203,29 +240,33 @@ const Index = () => {
           </div>
 
           <div className="flex flex-col md:flex-row gap-8 justify-center items-center">
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.05 }}
               className="flex flex-col items-center p-6 rounded-2xl bg-muted space-y-4 flex-1"
             >
               <Brain className="h-12 w-12 text-primary" />
               <h3 className="text-xl font-semibold">Modern AI</h3>
-              <p className="text-muted-foreground">Cutting-edge artificial intelligence algorithms</p>
+              <p className="text-muted-foreground">
+                Cutting-edge artificial intelligence algorithms
+              </p>
             </motion.div>
 
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.05 }}
               className="flex flex-col items-center p-6 rounded-2xl bg-muted space-y-4 flex-1"
             >
               <BookOpen className="h-12 w-12 text-accent" />
               <h3 className="text-xl font-semibold">Ancient Wisdom</h3>
-              <p className="text-muted-foreground">Timeless Vedic knowledge and principles</p>
+              <p className="text-muted-foreground">
+                Timeless Vedic knowledge and principles
+              </p>
             </motion.div>
           </div>
         </motion.div>
       </section>
 
       <section id="services" className="py-20 px-4 bg-muted/50">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -260,7 +301,7 @@ const Index = () => {
       </section>
 
       <section className="py-20 px-4 bg-white">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -286,7 +327,9 @@ const Index = () => {
                 <p className="text-lg italic">"{testimonial.quote}"</p>
                 <div>
                   <p className="font-semibold">{testimonial.author}</p>
-                  <p className="text-sm text-muted-foreground">{testimonial.position}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {testimonial.position}
+                  </p>
                 </div>
               </motion.div>
             ))}
@@ -304,13 +347,21 @@ const Index = () => {
               </p>
             </div>
             <div className="flex gap-6">
-              <a href="#" className="hover:text-primary transition-colors">About</a>
-              <a href="#" className="hover:text-primary transition-colors">Services</a>
-              <a href="#" className="hover:text-primary transition-colors">Contact</a>
+              <a href="#" className="hover:text-primary transition-colors">
+                About
+              </a>
+              <a href="#" className="hover:text-primary transition-colors">
+                Services
+              </a>
+              <a href="#" className="hover:text-primary transition-colors">
+                Contact
+              </a>
             </div>
           </div>
           <div className="border-t border-secondary-foreground/20 pt-8 text-center text-secondary-foreground/60">
-            <p>&copy; {new Date().getFullYear()} Vedic AI. All rights reserved.</p>
+            <p>
+              &copy; {new Date().getFullYear()} Vedic AI. All rights reserved.
+            </p>
           </div>
         </div>
       </footer>
@@ -320,8 +371,8 @@ const Index = () => {
         animate={{ scale: 1 }}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
-        onClick={toggleChat}
-        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow ${chatOpen ? 'hidden' : ''}`}
+        onClick={handleTryDemo}
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow"
       >
         <MessageCircle className="h-6 w-6" />
       </motion.button>
@@ -332,15 +383,15 @@ const Index = () => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           className={`fixed ${
-            isMaximized 
-              ? 'top-0 left-0 right-0 bottom-0 m-4' 
-              : 'bottom-4 right-4 w-80 h-96'
+            isMaximized
+              ? "top-0 left-0 right-0 bottom-0 m-4"
+              : "bottom-4 right-4 w-80 h-96"
           } bg-white rounded-lg shadow-lg border border-gray-200 flex flex-col z-50 transition-all duration-300`}
         >
           <div className="p-4 border-b border-gray-200 flex justify-between items-center">
             <h3 className="font-semibold">Vedic AI Chat</h3>
             <div className="flex items-center gap-2">
-              <button 
+              <button
                 onClick={toggleMaximize}
                 className="text-gray-500 hover:text-gray-700 p-1 rounded-lg hover:bg-gray-100 transition-colors"
               >
@@ -350,7 +401,7 @@ const Index = () => {
                   <Maximize2 className="h-5 w-5" />
                 )}
               </button>
-              <button 
+              <button
                 onClick={toggleChat}
                 className="text-gray-500 hover:text-gray-700 p-1 rounded-lg hover:bg-gray-100 transition-colors"
               >

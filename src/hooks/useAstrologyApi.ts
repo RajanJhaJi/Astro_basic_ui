@@ -1,8 +1,20 @@
 import { useState } from "react";
+import {
+  ChatResponse,
+  CreateChatRequest,
+  ContinueChatRequest,
+} from "@/types/api";
+import { Chat } from "@/types/chat";
 
-interface AstrologyAPIConfig {
+interface ApiConfig {
   baseURL: string;
   wsURL: string;
+}
+
+interface WebSocketHandlers {
+  onMessage: (message: string) => void;
+  onComplete: () => void;
+  onError: (error: string) => void;
 }
 
 interface ChatMessage {
@@ -18,7 +30,7 @@ interface Chat {
   updated_at: string;
 }
 
-export const useAstrologyAPI = (config: AstrologyAPIConfig) => {
+export const useAstrologyAPI = (config: ApiConfig) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -76,29 +88,40 @@ export const useAstrologyAPI = (config: AstrologyAPIConfig) => {
     }
   };
 
-  const connectToChat = (
-    chatId: number,
-    callbacks: {
-      onMessage: (message: string) => void;
-      onComplete: () => void;
-      onError: (error: string) => void;
+  const continueChat = async (chatId: number, request: ContinueChatRequest) => {
+    const response = await fetch(
+      `${config.baseURL}/api/chat/${chatId}/continue`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(request),
+      }
+    );
+    console.log("🚀 ~ continueChat ~ response:", response);
+
+    if (!response.ok) {
+      throw new Error("Failed to continue chat");
     }
-  ) => {
+
+    return (await response.json()) as ChatResponse;
+  };
+
+  const connectToChat = (chatId: number, handlers: WebSocketHandlers) => {
     const ws = new WebSocket(`${config.wsURL}/ws/chat/${chatId}`);
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      switch (data.type) {
-        case "chunk":
-          callbacks.onMessage(data.content);
-          break;
-        case "complete":
-          callbacks.onComplete();
-          break;
-        case "error":
-          callbacks.onError(data.content);
-          break;
+      if (data.type === "message") {
+        handlers.onMessage(data.content);
+      } else if (data.type === "complete") {
+        handlers.onComplete();
       }
+    };
+
+    ws.onerror = () => {
+      handlers.onError("WebSocket connection failed");
     };
 
     return ws;
@@ -106,9 +129,10 @@ export const useAstrologyAPI = (config: AstrologyAPIConfig) => {
 
   return {
     createNewChat,
+    continueChat,
+    connectToChat,
     getUserChats,
     getChat,
-    connectToChat,
     loading,
     error,
   };

@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { UserIcon, AssistantIcon } from "./ChatIcons";
 import { suggestedQuestions } from "@/config/suggestions";
 import { SuggestedQuestions } from "./SuggestedQuestions";
+import { ChatLoader } from "./ChatLoader";
 
 export function SimpleChatInterface() {
   const [chats, setChats] = useState<Chat[]>([]);
@@ -21,8 +22,9 @@ export function SimpleChatInterface() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
 
-  const { createNewChat, connectToChat, getUserChats, getChat } =
+  const { createNewChat, connectToChat, getUserChats, getChat, continueChat } =
     useAstrologyAPI(astrologyApiConfig);
 
   const { toast } = useToast();
@@ -58,76 +60,129 @@ export function SimpleChatInterface() {
     }
   };
 
+  const sanitizeMarkdown = (content: string) => {
+    // Remove thinking section and any XML-like tags
+    return content
+      .replace(/<think>[\s\S]*?<\/think>\n*/g, "") // Remove think blocks and following newlines
+      .replace(/<[^>]*>/g, "") // Remove any remaining XML tags
+      .trim()
+      .replace(/^\n+/, ""); // Remove leading newlines
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || loading) return;
 
-    const birthDetails = getBirthDetails();
-    if (!birthDetails) {
-      toast({
-        title: "Error",
-        description: "Birth details not found",
-        variant: "destructive",
-      });
-      return;
-    }
+    const currentInput = input;
+    setInput("");
 
+    // Add user message immediately
+    setMessages((prev) => [...prev, { role: "user", content: currentInput }]);
     setLoading(true);
-    try {
-      let chatId: number;
+    setIsTyping(true);
 
+    try {
       if (!currentChat) {
+        const birthDetails = getBirthDetails();
+        if (!birthDetails) {
+          toast({
+            title: "Error",
+            description: "Birth details not found",
+            variant: "destructive",
+          });
+          return;
+        }
+
         const response = await createNewChat({
           user_id: "user-123",
           birth_date: birthDetails.date,
           birth_time: birthDetails.time,
           latitude: birthDetails.latitude,
           longitude: birthDetails.longitude,
-          message: input,
+          message: currentInput,
         });
-        chatId = response.chat_id;
+        const chatId = response.chat_id;
+        setCurrentChat({
+          id: chatId,
+          messages: [],
+          title: "New Chat",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
       } else {
-        chatId = currentChat.id;
+        // For existing chat, initialize WebSocket first
+        let isResponseStarted = false;
+        const ws = connectToChat(currentChat.id, {
+          onMessage: (message) => {
+            setMessages((prev) => {
+              const newMessages = [...prev];
+              if (!isResponseStarted) {
+                // Add new assistant message with sanitized content
+                newMessages.push({
+                  role: "assistant",
+                  content: sanitizeMarkdown(message),
+                });
+                isResponseStarted = true;
+              } else {
+                // Append sanitized content to existing message
+                const lastMessage = newMessages[newMessages.length - 1];
+                if (lastMessage?.role === "assistant") {
+                  lastMessage.content += sanitizeMarkdown(message);
+                }
+              }
+              return newMessages;
+            });
+          },
+          onComplete: () => {
+            setLoading(false);
+            setIsTyping(false);
+            loadUserChats();
+          },
+          onError: (error) => {
+            setMessages((prev) => {
+              // Remove incomplete assistant message if any
+              return prev.filter(
+                (msg) => !(msg.role === "assistant" && msg.content === "")
+              );
+            });
+            toast({
+              title: "Error",
+              description: error,
+              variant: "destructive",
+            });
+            setLoading(false);
+            setIsTyping(false);
+          },
+        });
+
+        try {
+          // Start the continue chat request
+          await continueChat(currentChat.id, {
+            message: currentInput,
+            type: "western_birth_chart",
+            context_window: 5,
+          });
+        } catch (error) {
+          ws.close();
+          throw error;
+        }
+
+        return () => ws.close();
       }
-
-      setMessages((prev) => [...prev, { role: "user", content: input }]);
-      setInput("");
-
-      const ws = connectToChat(chatId, {
-        onMessage: (message) => {
-          setMessages((prev) => {
-            const lastMessage = prev[prev.length - 1];
-            if (lastMessage?.role === "assistant") {
-              return [
-                ...prev.slice(0, -1),
-                { role: "assistant", content: lastMessage.content + message },
-              ];
-            }
-            return [...prev, { role: "assistant", content: message }];
-          });
-        },
-        onComplete: () => {
-          setLoading(false);
-          loadUserChats(); // Refresh chat list
-        },
-        onError: (error) => {
-          toast({
-            title: "Error",
-            description: error,
-            variant: "destructive",
-          });
-          setLoading(false);
-        },
-      });
-
-      return () => ws.close();
     } catch (error) {
+      setMessages((prev) => {
+        // Remove any incomplete assistant message on error
+        return prev.filter(
+          (msg) => !(msg.role === "assistant" && msg.content === "")
+        );
+      });
       toast({
         title: "Error",
         description: "Failed to send message",
         variant: "destructive",
       });
       setLoading(false);
+      setIsTyping(false);
     }
   };
 
@@ -180,42 +235,45 @@ export function SimpleChatInterface() {
                   message.role === "user" ? "flex-row-reverse" : "flex-row"
                 }`}
               >
-                {message.role === "user" ? <UserIcon /> : <AssistantIcon />}
+                {message.role === "user" ? (
+                  <UserIcon />
+                ) : message.content || isTyping ? (
+                  <AssistantIcon />
+                ) : null}
                 <div
-                  className={`p-4 rounded-lg max-w-[80%] ${
+                  className={cn(
+                    "p-4 rounded-lg max-w-[80%]",
                     message.role === "user"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted"
-                  }`}
+                  )}
                 >
                   {message.role === "assistant" ? (
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      components={{
-                        // Apply styles to specific elements
-                        p: ({ node, ...props }) => (
-                          <p className="prose-p:leading-relaxed" {...props} />
-                        ),
-                        pre: ({ node, ...props }) => (
-                          <pre className="p-0" {...props} />
-                        ),
-                        // Add wrapper div with the main styles
-                        div: ({ node, ...props }) => (
-                          <div
-                            className="prose prose-sm max-w-none dark:prose-invert"
-                            {...props}
-                          />
-                        ),
-                      }}
-                    >
-                      {message.content}
-                    </ReactMarkdown>
+                    <div className="prose prose-sm max-w-none dark:prose-invert">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          p: ({ children }) => (
+                            <p className="leading-relaxed">{children}</p>
+                          ),
+                          pre: ({ children }) => (
+                            <pre className="p-0">{children}</pre>
+                          ),
+                        }}
+                      >
+                        {message.content || " "}
+                      </ReactMarkdown>
+                    </div>
                   ) : (
                     <p className="whitespace-pre-wrap">{message.content}</p>
                   )}
                 </div>
               </div>
             ))}
+            {isTyping &&
+              !messages.some((m) => m.role === "assistant" && !m.content) && (
+                <ChatLoader />
+              )}
           </div>
         </div>
 
